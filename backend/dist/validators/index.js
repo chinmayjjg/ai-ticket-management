@@ -40,7 +40,7 @@ exports.createTicketValidation = [
         .isLength({ min: 10, max: 2000 })
         .withMessage('Description must be between 10 and 2000 characters'),
     (0, express_validator_1.body)('priority')
-        .optional()
+        .optional({ values: 'falsy' })
         .isIn(['low', 'medium', 'high', 'urgent'])
         .withMessage('Priority must be one of: low, medium, high, urgent')
 ];
@@ -50,7 +50,7 @@ exports.updateTicketValidation = [
         .isIn(['open', 'in-progress', 'resolved', 'closed'])
         .withMessage('Status must be one of: open, in-progress, resolved, closed'),
     (0, express_validator_1.body)('priority')
-        .optional()
+        .optional({ values: 'falsy' })
         .isIn(['low', 'medium', 'high', 'urgent'])
         .withMessage('Priority must be one of: low, medium, high, urgent'),
     (0, express_validator_1.body)('assignedTo')

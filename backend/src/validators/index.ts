@@ -46,7 +46,7 @@ export const createTicketValidation = [
     .withMessage('Description must be between 10 and 2000 characters'),
   
   body('priority')
-    .optional()
+    .optional({ values: 'falsy' })
     .isIn(['low', 'medium', 'high', 'urgent'])
     .withMessage('Priority must be one of: low, medium, high, urgent')
 ];
@@ -58,7 +58,7 @@ export const updateTicketValidation = [
     .withMessage('Status must be one of: open, in-progress, resolved, closed'),
   
   body('priority')
-    .optional()
+    .optional({ values: 'falsy' })
     .isIn(['low', 'medium', 'high', 'urgent'])
     .withMessage('Priority must be one of: low, medium, high, urgent'),
   

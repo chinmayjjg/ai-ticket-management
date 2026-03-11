@@ -278,7 +278,7 @@ const Dashboard: React.FC = () => {
                 {!Object.keys(filters).some(key => filters[key as keyof TicketFilters] && key !== 'page' && key !== 'limit' && key !== 'sortBy' && key !== 'sortOrder') && (
                   <div className="mt-6">
                     <Link to="/create-ticket" className="btn-primary">
-                      <Plus className="h-5 w-5 mr-2" />
+                      <Plus className="h-2 w-10 mr-2" />
                       Create your first ticket
                     </Link>
                   </div>

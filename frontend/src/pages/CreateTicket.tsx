@@ -22,7 +22,12 @@ const CreateTicket: React.FC = () => {
   const onSubmit = async (data: CreateTicketData) => {
     setIsSubmitting(true);
     try {
-      const response = await ticketsAPI.create(data);
+      const payload = {
+        ...data,
+        ...(data.priority ? {} : { priority: undefined }),
+      };
+
+      const response = await ticketsAPI.create(payload);
       
       if (response.success) {
         toast.success('Ticket created successfully!');

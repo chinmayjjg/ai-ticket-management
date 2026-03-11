@@ -75,9 +75,12 @@ const getTickets = async (req, res) => {
         const { status, category, priority, assignedTo, page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
         // Build filter object
         const filter = {};
-        // For regular agents, only show their assigned tickets
+        // For regular agents, show tickets they created or are assigned to
         if (req.user?.role === 'agent') {
-            filter.assignedTo = req.user.id;
+            filter.$or = [
+                { assignedTo: req.user.id },
+                { createdBy: req.user.id }
+            ];
         }
         if (status)
             filter.status = status;
@@ -147,20 +150,26 @@ const getTicketById = async (req, res) => {
                 message: 'Ticket not found'
             });
         }
-        // Check if user has permission to view this ticket
+        // Agents can view tickets they created or are assigned to
         if (req.user?.role === 'agent') {
-            // assignedTo can be ObjectId or populated user
             let assignedToId;
+            let createdById;
             if (typeof ticket.assignedTo === 'object' && ticket.assignedTo !== null && '_id' in ticket.assignedTo) {
                 assignedToId = ticket.assignedTo._id.toString();
             }
             else if (typeof ticket.assignedTo === 'string') {
                 assignedToId = ticket.assignedTo;
             }
-            if (assignedToId !== req.user.id) {
+            if (typeof ticket.createdBy === 'object' && ticket.createdBy !== null && '_id' in ticket.createdBy) {
+                createdById = ticket.createdBy._id.toString();
+            }
+            else if (typeof ticket.createdBy === 'string') {
+                createdById = ticket.createdBy;
+            }
+            if (assignedToId !== req.user.id && createdById !== req.user.id) {
                 return res.status(403).json({
                     success: false,
-                    message: 'Access denied: You can only view tickets assigned to you'
+                    message: 'Access denied: You can only view tickets you created or are assigned to'
                 });
             }
         }
@@ -293,9 +302,12 @@ exports.deleteTicket = deleteTicket;
 const getTicketStats = async (req, res) => {
     try {
         const filter = {};
-        // For agents, only show stats for their tickets
+        // For agents, only show stats for tickets they created or are assigned to
         if (req.user?.role === 'agent') {
-            filter.assignedTo = req.user.id;
+            filter.$or = [
+                { assignedTo: req.user.id },
+                { createdBy: req.user.id }
+            ];
         }
         const [totalTickets, openTickets, inProgressTickets, resolvedTickets, closedTickets, priorityStats, categoryStats] = await Promise.all([
             Ticket_1.Ticket.countDocuments(filter),

@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import CreateTicket from './pages/CreateTicket';
+import TicketDetails from './pages/TicketDetails';
 import './index.css';
 
 function App() {
@@ -35,6 +36,14 @@ function App() {
                   <CreateTicket />
                 </ProtectedRoute>
               } 
+            />
+            <Route
+              path="/tickets/:id"
+              element={
+                <ProtectedRoute>
+                  <TicketDetails />
+                </ProtectedRoute>
+              }
             />
             
             {/* Default redirect */}
