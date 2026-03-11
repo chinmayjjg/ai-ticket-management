@@ -4,15 +4,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ticketsAPI } from '@/services/api';
 import { 
   Plus, 
-  Filter, 
-  Search, 
   RefreshCw, 
   LogOut,
   User,
   Clock,
   CheckCircle,
   AlertCircle,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react';
 import type { Ticket, TicketFilters, TicketStats } from '@/types';
 import toast from 'react-hot-toast';
@@ -23,6 +22,7 @@ const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<TicketStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [deletingTicketId, setDeletingTicketId] = useState<string | null>(null);
   const [filters, setFilters] = useState<TicketFilters>({
     page: 1,
     limit: 10,
@@ -81,6 +81,27 @@ const Dashboard: React.FC = () => {
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Failed to update ticket';
       toast.error(errorMessage);
+    }
+  };
+
+  const handleDeleteTicket = async (ticketId: string, ticketTitle: string) => {
+    const confirmed = window.confirm(`Delete ticket "${ticketTitle}"?`);
+    if (!confirmed) return;
+
+    try {
+      setDeletingTicketId(ticketId);
+      const response = await ticketsAPI.delete(ticketId);
+
+      if (response.success) {
+        setTickets(prev => prev.filter(ticket => ticket._id !== ticketId));
+        toast.success('Ticket deleted successfully');
+        loadData(true);
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to delete ticket';
+      toast.error(errorMessage);
+    } finally {
+      setDeletingTicketId(null);
     }
   };
 
@@ -347,12 +368,31 @@ const Dashboard: React.FC = () => {
                           {formatDate(ticket.createdAt)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <Link
-                            to={`/tickets/${ticket._id}`}
-                            className="text-primary-600 hover:text-primary-900 transition-colors duration-200"
-                          >
-                            View
-                          </Link>
+                          <div className="flex items-center gap-4">
+                            <Link
+                              to={`/tickets/${ticket._id}`}
+                              className="text-primary-600 hover:text-primary-900 transition-colors duration-200"
+                            >
+                              View
+                            </Link>
+                            {user?.role === 'admin' && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteTicket(ticket._id, ticket.title)}
+                                disabled={deletingTicketId === ticket._id}
+                                className="inline-flex items-center text-red-600 hover:text-red-800 disabled:opacity-50 transition-colors duration-200"
+                              >
+                                {deletingTicketId === ticket._id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <>
+                                    <Trash2 className="h-4 w-4 mr-1" />
+                                    Delete
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}

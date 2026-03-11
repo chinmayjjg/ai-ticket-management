@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, User, Calendar, Tag } from 'lucide-react';
+import { ArrowLeft, Loader2, User, Calendar, Tag, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ticketsAPI } from '@/services/api';
 import type { Ticket } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 const TicketDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const loadTicket = async () => {
@@ -68,6 +71,28 @@ const TicketDetails: React.FC = () => {
     }
   };
 
+  const handleDeleteTicket = async () => {
+    if (!ticket) return;
+
+    const confirmed = window.confirm(`Delete ticket "${ticket.title}"?`);
+    if (!confirmed) return;
+
+    try {
+      setIsDeleting(true);
+      const response = await ticketsAPI.delete(ticket._id);
+
+      if (response.success) {
+        toast.success('Ticket deleted successfully');
+        navigate('/dashboard', { replace: true });
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to delete ticket';
+      toast.error(errorMessage);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -97,9 +122,28 @@ const TicketDetails: React.FC = () => {
               </button>
               <h1 className="text-xl font-semibold text-gray-900">Ticket Details</h1>
             </div>
-            <Link to="/dashboard" className="btn-secondary">
-              Back to Dashboard
-            </Link>
+            <div className="flex items-center gap-3">
+              {user?.role === 'admin' && (
+                <button
+                  type="button"
+                  onClick={handleDeleteTicket}
+                  disabled={isDeleting}
+                  className="inline-flex items-center rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors duration-200"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Ticket
+                    </>
+                  )}
+                </button>
+              )}
+              <Link to="/dashboard" className="btn-secondary">
+                Back to Dashboard
+              </Link>
+            </div>
           </div>
         </div>
       </div>
