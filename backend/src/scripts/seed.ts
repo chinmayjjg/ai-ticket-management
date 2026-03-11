@@ -32,7 +32,9 @@ const seedUsers = async () => {
       }
     ];
 
-    const createdUsers = await User.insertMany(users);
+    const createdUsers = await Promise.all(
+      users.map((userData) => new User(userData).save())
+    );
     console.log('✅ Users seeded successfully');
     return createdUsers;
   } catch (error) {

@@ -79,7 +79,15 @@ const login = async (req, res) => {
             });
         }
         // Check password
-        const isValidPassword = await user.comparePassword(password);
+        let isValidPassword = false;
+        if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$') || user.password.startsWith('$2y$')) {
+            isValidPassword = await user.comparePassword(password);
+        }
+        else if (user.password === password) {
+            isValidPassword = true;
+            user.password = password;
+            await user.save();
+        }
         if (!isValidPassword) {
             return res.status(401).json({
                 success: false,

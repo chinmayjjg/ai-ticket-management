@@ -6,7 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const connectDB = async () => {
     try {
-        const mongoURI = process.env.MONGODB_URI || 'mongodb+srv://chinmay4:chinmay@cluster0.r7ynkmt.mongodb.net/ai-ticket';
+        const mongoURI = process.env.MONGODB_URI;
+        if (!mongoURI) {
+            console.error('❌ MONGODB_URI environment variable not set.');
+            process.exit(1);
+        }
         const conn = await mongoose_1.default.connect(mongoURI);
         console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
         // Handle connection events
@@ -18,7 +22,7 @@ const connectDB = async () => {
         });
         // Graceful shutdown
         process.on('SIGINT', async () => {
-            await mongoose_1.default.connection.close();
+            await mongoose_1.default.disconnect();
             console.log('🔒 MongoDB connection closed through app termination');
             process.exit(0);
         });

@@ -33,7 +33,7 @@ const seedUsers = async () => {
                 role: 'agent'
             }
         ];
-        const createdUsers = await User_1.User.insertMany(users);
+        const createdUsers = await Promise.all(users.map((userData) => new User_1.User(userData).save()));
         console.log('✅ Users seeded successfully');
         return createdUsers;
     }
