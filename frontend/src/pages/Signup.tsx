@@ -22,10 +22,7 @@ const Signup: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
   } = useForm<SignupData>();
-
-  const password = watch('password');
 
   const onSubmit = async (data: SignupData) => {
     setIsSubmitting(true);

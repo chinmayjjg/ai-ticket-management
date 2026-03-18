@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { ticketsAPI } from '@/services/api';
@@ -31,7 +31,7 @@ const Dashboard: React.FC = () => {
   });
 
   // Load tickets and stats
-  const loadData = async (showRefresh = false) => {
+  const loadData = useCallback(async (showRefresh = false) => {
     try {
       if (showRefresh) setIsRefreshing(true);
       else setIsLoading(true);
@@ -55,11 +55,11 @@ const Dashboard: React.FC = () => {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
     loadData();
-  }, [filters]);
+  }, [loadData]);
 
   const handleStatusUpdate = async (ticketId: string, newStatus: string) => {
     try {
