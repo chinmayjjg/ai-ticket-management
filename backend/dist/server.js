@@ -13,11 +13,21 @@ const tickets_1 = __importDefault(require("./routes/tickets"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 // Connect to MongoDB
 (0, database_1.default)();
 // Middleware
 app.use((0, cors_1.default)({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+            return;
+        }
+        callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true
 }));
 app.use(express_1.default.json({ limit: '10mb' }));
