@@ -73,7 +73,7 @@ TicketSchema.index({ assignedTo: 1 });
 TicketSchema.index({ createdBy: 1 });
 
 // Update resolvedAt when status changes to resolved
-TicketSchema.pre('save', function(next) {
+TicketSchema.pre<ITicket>('save', function(next) {
   if (this.isModified('status')) {
     if (this.status === 'resolved' && !this.resolvedAt) {
       this.resolvedAt = new Date();
