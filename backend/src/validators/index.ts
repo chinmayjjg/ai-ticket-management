@@ -51,6 +51,13 @@ export const createTicketValidation = [
     .withMessage('Priority must be one of: low, medium, high, urgent')
 ];
 
+export const rewriteDescriptionValidation = [
+  body('description')
+    .trim()
+    .isLength({ min: 10, max: 2000 })
+    .withMessage('Description must be between 10 and 2000 characters')
+];
+
 export const updateTicketValidation = [
   body('status')
     .optional()

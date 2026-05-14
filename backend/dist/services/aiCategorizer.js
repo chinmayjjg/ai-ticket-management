@@ -154,6 +154,67 @@ class AICategorizer {
             clearTimeout(timeout);
         }
     }
+    static normalizeDescription(description) {
+        return description
+            .replace(/\s+/g, " ")
+            .replace(/\s+([,.!?;:])/g, "$1")
+            .trim();
+    }
+    static fallbackRewriteDescription(description) {
+        const normalized = this.normalizeDescription(description);
+        if (!normalized)
+            return "";
+        const startsWithCapital = normalized.charAt(0).toUpperCase() + normalized.slice(1);
+        const hasTerminalPunctuation = /[.!?]$/.test(startsWithCapital);
+        const polished = hasTerminalPunctuation ? startsWithCapital : `${startsWithCapital}.`;
+        return `Issue summary: ${polished}\n\nImpact: Please review the affected service, users, and any related errors.\n\nRequested action: Investigate the root cause and provide the next recommended steps.`;
+    }
+    static async rewriteDescriptionWithGroq(description) {
+        const apiKey = process.env.GROQ_API_KEY;
+        if (!apiKey) {
+            throw new Error("GROQ_API_KEY is not configured");
+        }
+        const model = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+        try {
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${apiKey}`,
+                },
+                body: JSON.stringify({
+                    model,
+                    temperature: 0.3,
+                    messages: [
+                        {
+                            role: "system",
+                            content: "Rewrite support ticket descriptions for MSP/IT operations. Keep the user's meaning, do not invent facts, " +
+                                "and produce a clear professional issue request. Use concise sections when helpful. Return only the rewritten description.",
+                        },
+                        {
+                            role: "user",
+                            content: description,
+                        },
+                    ],
+                }),
+                signal: controller.signal,
+            });
+            const payload = (await response.json());
+            if (!response.ok) {
+                throw new Error(payload.error?.message || `Groq request failed with status ${response.status}`);
+            }
+            const content = payload.choices?.[0]?.message?.content;
+            if (!content) {
+                throw new Error("Groq returned an empty completion");
+            }
+            return content.trim();
+        }
+        finally {
+            clearTimeout(timeout);
+        }
+    }
     static async getRandomAgent() {
         try {
             const { User } = await Promise.resolve().then(() => __importStar(require("../models/User")));
@@ -178,6 +239,21 @@ class AICategorizer {
         catch (error) {
             console.error("Groq categorization failed, falling back to keyword rules:", error);
             return this.categorizeTicket(title, description);
+        }
+    }
+    static async rewriteDescriptionWithAI(description) {
+        try {
+            return {
+                rewrittenDescription: await this.rewriteDescriptionWithGroq(description),
+                source: "groq",
+            };
+        }
+        catch (error) {
+            console.error("Groq rewrite failed, falling back to local rewrite:", error);
+            return {
+                rewrittenDescription: this.fallbackRewriteDescription(description),
+                source: "fallback",
+            };
         }
     }
 }

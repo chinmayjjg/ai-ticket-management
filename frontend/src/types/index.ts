@@ -102,3 +102,12 @@ export interface TicketFilters {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
+
+export interface RewriteDescriptionData {
+  description: string;
+}
+
+export interface RewriteDescriptionResponse {
+  rewrittenDescription: string;
+  source: 'groq' | 'fallback';
+}

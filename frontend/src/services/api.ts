@@ -4,6 +4,8 @@ import type {
   SignupData, 
   AuthResponse, 
   CreateTicketData, 
+  RewriteDescriptionData,
+  RewriteDescriptionResponse,
   UpdateTicketData,
   Ticket,
   TicketFilters,
@@ -71,6 +73,11 @@ export const authAPI = {
 export const ticketsAPI = {
   create: async (data: CreateTicketData): Promise<ApiResponse<{ ticket: Ticket }>> => {
     const response = await apiClient.post('/tickets', data);
+    return response.data;
+  },
+
+  rewriteDescription: async (data: RewriteDescriptionData): Promise<ApiResponse<RewriteDescriptionResponse>> => {
+    const response = await apiClient.post('/tickets/rewrite-description', data);
     return response.data;
   },
 

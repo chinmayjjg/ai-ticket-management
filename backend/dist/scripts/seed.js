@@ -34,11 +34,11 @@ const seedUsers = async () => {
             }
         ];
         const createdUsers = await Promise.all(users.map((userData) => new User_1.User(userData).save()));
-        console.log('✅ Users seeded successfully');
+        console.log('Users seeded successfully');
         return createdUsers;
     }
     catch (error) {
-        console.error('❌ Error seeding users:', error);
+        console.error(' Error seeding users:', error);
         throw error;
     }
 };
@@ -48,7 +48,7 @@ const seedTickets = async (users) => {
         await Ticket_1.Ticket.deleteMany({});
         const agents = users.filter(user => user.role === 'agent');
         if (agents.length === 0) {
-            console.log('⚠️ No agents found, skipping ticket seeding');
+            console.log(' No agents found, skipping ticket seeding');
             return;
         }
         // Create sample tickets
@@ -100,10 +100,10 @@ const seedTickets = async (users) => {
             }
         ];
         await Ticket_1.Ticket.insertMany(tickets);
-        console.log('✅ Tickets seeded successfully');
+        console.log('Tickets seeded successfully');
     }
     catch (error) {
-        console.error('❌ Error seeding tickets:', error);
+        console.error('Error seeding tickets:', error);
         throw error;
     }
 };

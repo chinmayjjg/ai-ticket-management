@@ -8,16 +8,51 @@ import type { CreateTicketData } from '@/types';
 
 const CreateTicket: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRewriting, setIsRewriting] = useState(false);
   const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
     watch,
   } = useForm<CreateTicketData>();
 
   const watchedDescription = watch('description', '');
+
+  const handleRewriteDescription = async () => {
+    const description = watchedDescription.trim();
+
+    if (description.length < 10) {
+      toast.error('Add at least 10 characters before using AI rewrite.');
+      return;
+    }
+
+    setIsRewriting(true);
+    try {
+      const response = await ticketsAPI.rewriteDescription({ description });
+
+      if (response.success && response.data?.rewrittenDescription) {
+        setValue('description', response.data.rewrittenDescription, {
+          shouldDirty: true,
+          shouldTouch: true,
+          shouldValidate: true,
+        });
+
+        toast.success(
+          response.data.source === 'groq'
+            ? 'Description rewritten with AI.'
+            : 'Description polished with local fallback.'
+        );
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to rewrite description';
+      toast.error(errorMessage);
+    } finally {
+      setIsRewriting(false);
+    }
+  };
 
   const onSubmit = async (data: CreateTicketData) => {
     setIsSubmitting(true);
@@ -93,9 +128,24 @@ const CreateTicket: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-semibold text-[#0b1c30]">
-                Description <span className="text-[#ba1a1a]">*</span>
-              </label>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <label htmlFor="description" className="block text-sm font-semibold text-[#0b1c30]">
+                  Description <span className="text-[#ba1a1a]">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleRewriteDescription}
+                  disabled={isRewriting || watchedDescription.trim().length < 10}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#00D1FF]/40 bg-[#00D1FF]/10 px-3 py-2 text-sm font-semibold text-[#004666] transition hover:bg-[#00D1FF]/15 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isRewriting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                  Rewrite with AI
+                </button>
+              </div>
               <textarea
                 {...register('description', {
                   required: 'Description is required',

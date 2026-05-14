@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTicketStats = exports.deleteTicket = exports.updateTicket = exports.getTicketById = exports.getTickets = exports.createTicket = void 0;
+exports.getTicketStats = exports.deleteTicket = exports.updateTicket = exports.getTicketById = exports.getTickets = exports.rewriteDescription = exports.createTicket = void 0;
 const express_validator_1 = require("express-validator");
 const Ticket_1 = require("../models/Ticket");
 const User_1 = require("../models/User");
@@ -70,6 +70,34 @@ const createTicket = async (req, res) => {
     }
 };
 exports.createTicket = createTicket;
+const rewriteDescription = async (req, res) => {
+    try {
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation errors',
+                errors: errors.array()
+            });
+        }
+        const { description } = req.body;
+        const rewrite = await aiCategorizer_1.AICategorizer.rewriteDescriptionWithAI(description);
+        res.json({
+            success: true,
+            message: 'Description rewritten successfully',
+            data: rewrite
+        });
+    }
+    catch (error) {
+        console.error('Rewrite description error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+};
+exports.rewriteDescription = rewriteDescription;
 const getTickets = async (req, res) => {
     try {
         const { status, category, priority, assignedTo, page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
