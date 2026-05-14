@@ -160,6 +160,18 @@ class AICategorizer {
             .replace(/\s+([,.!?;:])/g, "$1")
             .trim();
     }
+    static stripRewriteMetadata(content) {
+        const lines = content
+            .replace(/\r\n/g, "\n")
+            .split("\n")
+            .map((line) => line.trim())
+            .filter(Boolean)
+            .filter((line) => !/^#{1,6}\s*/.test(line))
+            .filter((line) => !/^\*\*(issue description|category|priority|description|detailed symptoms|expected resolution|requested action)\s*:\*\*$/i.test(line))
+            .filter((line) => !/^(issue description|category|priority|description|detailed symptoms|expected resolution|requested action)\s*:/i.test(line))
+            .filter((line) => !/^[-*]\s*/.test(line));
+        return this.normalizeDescription(lines.join(" "));
+    }
     static fallbackRewriteDescription(description) {
         const normalized = this.normalizeDescription(description);
         if (!normalized)
@@ -167,7 +179,7 @@ class AICategorizer {
         const startsWithCapital = normalized.charAt(0).toUpperCase() + normalized.slice(1);
         const hasTerminalPunctuation = /[.!?]$/.test(startsWithCapital);
         const polished = hasTerminalPunctuation ? startsWithCapital : `${startsWithCapital}.`;
-        return `Issue summary: ${polished}\n\nImpact: Please review the affected service, users, and any related errors.\n\nRequested action: Investigate the root cause and provide the next recommended steps.`;
+        return polished;
     }
     static async rewriteDescriptionWithGroq(description) {
         const apiKey = process.env.GROQ_API_KEY;
@@ -191,7 +203,8 @@ class AICategorizer {
                         {
                             role: "system",
                             content: "Rewrite support ticket descriptions for MSP/IT operations. Keep the user's meaning, do not invent facts, " +
-                                "and produce a clear professional issue request. Use concise sections when helpful. Return only the rewritten description.",
+                                "and produce only a polished description. Do not include headings, category, priority, bullet points, labels, " +
+                                "expected resolution, requested action, markdown, or extra metadata. Return one concise paragraph only.",
                         },
                         {
                             role: "user",
@@ -209,7 +222,7 @@ class AICategorizer {
             if (!content) {
                 throw new Error("Groq returned an empty completion");
             }
-            return content.trim();
+            return this.stripRewriteMetadata(content);
         }
         finally {
             clearTimeout(timeout);

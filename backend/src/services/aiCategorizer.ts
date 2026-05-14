@@ -169,6 +169,20 @@ export class AICategorizer {
       .trim();
   }
 
+  private static stripRewriteMetadata(content: string): string {
+    const lines = content
+      .replace(/\r\n/g, "\n")
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .filter((line) => !/^#{1,6}\s*/.test(line))
+      .filter((line) => !/^\*\*(issue description|category|priority|description|detailed symptoms|expected resolution|requested action)\s*:\*\*$/i.test(line))
+      .filter((line) => !/^(issue description|category|priority|description|detailed symptoms|expected resolution|requested action)\s*:/i.test(line))
+      .filter((line) => !/^[-*]\s*/.test(line));
+
+    return this.normalizeDescription(lines.join(" "));
+  }
+
   private static fallbackRewriteDescription(description: string): string {
     const normalized = this.normalizeDescription(description);
     if (!normalized) return "";
@@ -177,7 +191,7 @@ export class AICategorizer {
     const hasTerminalPunctuation = /[.!?]$/.test(startsWithCapital);
     const polished = hasTerminalPunctuation ? startsWithCapital : `${startsWithCapital}.`;
 
-    return `Issue summary: ${polished}\n\nImpact: Please review the affected service, users, and any related errors.\n\nRequested action: Investigate the root cause and provide the next recommended steps.`;
+    return polished;
   }
 
   private static async rewriteDescriptionWithGroq(description: string): Promise<string> {
@@ -205,7 +219,8 @@ export class AICategorizer {
               role: "system",
               content:
                 "Rewrite support ticket descriptions for MSP/IT operations. Keep the user's meaning, do not invent facts, " +
-                "and produce a clear professional issue request. Use concise sections when helpful. Return only the rewritten description.",
+                "and produce only a polished description. Do not include headings, category, priority, bullet points, labels, " +
+                "expected resolution, requested action, markdown, or extra metadata. Return one concise paragraph only.",
             },
             {
               role: "user",
@@ -227,7 +242,7 @@ export class AICategorizer {
         throw new Error("Groq returned an empty completion");
       }
 
-      return content.trim();
+      return this.stripRewriteMetadata(content);
     } finally {
       clearTimeout(timeout);
     }

@@ -16,6 +16,7 @@ export declare class AICategorizer {
     private static sanitizeResult;
     private static categorizeWithGroq;
     private static normalizeDescription;
+    private static stripRewriteMetadata;
     private static fallbackRewriteDescription;
     private static rewriteDescriptionWithGroq;
     static getRandomAgent(): Promise<string | null>;

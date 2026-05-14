@@ -9,6 +9,7 @@ const router = (0, express_1.Router)();
 router.use(auth_1.authenticateToken);
 // Ticket CRUD operations
 router.post('/', validators_1.createTicketValidation, ticketController_1.createTicket);
+router.post('/rewrite-description', validators_1.rewriteDescriptionValidation, ticketController_1.rewriteDescription);
 router.get('/', ticketController_1.getTickets);
 router.get('/stats', ticketController_1.getTicketStats);
 router.get('/:id', ticketController_1.getTicketById);

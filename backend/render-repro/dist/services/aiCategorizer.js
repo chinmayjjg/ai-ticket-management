@@ -154,6 +154,75 @@ class AICategorizer {
             clearTimeout(timeout);
         }
     }
+    static fallbackRewriteDescription(description) {
+        const normalized = description
+            .replace(/\s+/g, " ")
+            .replace(/\s+([,.!?;:])/g, "$1")
+            .trim();
+        if (!normalized)
+            return "";
+        const polished = normalized.charAt(0).toUpperCase() + normalized.slice(1);
+        return /[.!?]$/.test(polished) ? polished : `${polished}.`;
+    }
+    static stripRewriteMetadata(content) {
+        const lines = content
+            .replace(/\r\n/g, "\n")
+            .split("\n")
+            .map((line) => line.trim())
+            .filter(Boolean)
+            .filter((line) => !/^#{1,6}\s*/.test(line))
+            .filter((line) => !/^\*\*(issue description|category|priority|description|detailed symptoms|expected resolution|requested action)\s*:\*\*$/i.test(line))
+            .filter((line) => !/^(issue description|category|priority|description|detailed symptoms|expected resolution|requested action)\s*:/i.test(line))
+            .filter((line) => !/^[-*]\s*/.test(line));
+        return lines.join(" ").replace(/\s+/g, " ").replace(/\s+([,.!?;:])/g, "$1").trim();
+    }
+    static async rewriteDescriptionWithGroq(description) {
+        const apiKey = process.env.GROQ_API_KEY;
+        if (!apiKey) {
+            throw new Error("GROQ_API_KEY is not configured");
+        }
+        const model = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+        try {
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${apiKey}`,
+                },
+                body: JSON.stringify({
+                    model,
+                    temperature: 0.3,
+                    messages: [
+                        {
+                            role: "system",
+                            content: "Rewrite support ticket descriptions for MSP/IT operations. Keep the user's meaning, do not invent facts, " +
+                                "and produce only a polished description. Do not include headings, category, priority, bullet points, labels, " +
+                                "expected resolution, requested action, markdown, or extra metadata. Return one concise paragraph only.",
+                        },
+                        {
+                            role: "user",
+                            content: description,
+                        },
+                    ],
+                }),
+                signal: controller.signal,
+            });
+            const payload = (await response.json());
+            if (!response.ok) {
+                throw new Error(payload.error?.message || `Groq request failed with status ${response.status}`);
+            }
+            const content = payload.choices?.[0]?.message?.content;
+            if (!content) {
+                throw new Error("Groq returned an empty completion");
+            }
+            return this.stripRewriteMetadata(content);
+        }
+        finally {
+            clearTimeout(timeout);
+        }
+    }
     static async getRandomAgent() {
         try {
             const { User } = await Promise.resolve().then(() => __importStar(require("../models/User")));
@@ -178,6 +247,21 @@ class AICategorizer {
         catch (error) {
             console.error("Groq categorization failed, falling back to keyword rules:", error);
             return this.categorizeTicket(title, description);
+        }
+    }
+    static async rewriteDescriptionWithAI(description) {
+        try {
+            return {
+                rewrittenDescription: await this.rewriteDescriptionWithGroq(description),
+                source: "groq",
+            };
+        }
+        catch (error) {
+            console.error("Groq rewrite failed, falling back to local rewrite:", error);
+            return {
+                rewrittenDescription: this.fallbackRewriteDescription(description),
+                source: "fallback",
+            };
         }
     }
 }

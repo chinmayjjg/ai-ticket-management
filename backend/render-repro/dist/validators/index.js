@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateTicketValidation = exports.createTicketValidation = exports.loginValidation = exports.signupValidation = void 0;
+exports.updateTicketValidation = exports.rewriteDescriptionValidation = exports.createTicketValidation = exports.loginValidation = exports.signupValidation = void 0;
 const express_validator_1 = require("express-validator");
 // Auth validation schemas
 exports.signupValidation = [
@@ -43,6 +43,12 @@ exports.createTicketValidation = [
         .optional({ values: 'falsy' })
         .isIn(['low', 'medium', 'high', 'urgent'])
         .withMessage('Priority must be one of: low, medium, high, urgent')
+];
+exports.rewriteDescriptionValidation = [
+    (0, express_validator_1.body)('description')
+        .trim()
+        .isLength({ min: 10, max: 2000 })
+        .withMessage('Description must be between 10 and 2000 characters')
 ];
 exports.updateTicketValidation = [
     (0, express_validator_1.body)('status')
