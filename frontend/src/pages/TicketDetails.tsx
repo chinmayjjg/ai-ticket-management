@@ -95,10 +95,10 @@ const TicketDetails: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="app-shell flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <Loader2 className="animate-spin h-8 w-8 text-primary-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading ticket...</p>
+          <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-[#3525cd]" />
+          <p className="muted-text">Loading ticket...</p>
         </div>
       </div>
     );
@@ -109,18 +109,22 @@ const TicketDetails: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="app-shell">
+      <div className="app-header sticky top-0 z-20">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <button
                 onClick={() => navigate('/dashboard')}
-                className="mr-4 p-2 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors duration-200"
+                className="mr-4 rounded-lg border border-[#c7c4d8] bg-white/70 p-2 text-[#464555] transition hover:border-[#3525cd] hover:text-[#3525cd]"
+                aria-label="Back to dashboard"
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <h1 className="text-xl font-semibold text-gray-900">Ticket Details</h1>
+              <div>
+                <h1 className="text-xl font-semibold text-[#0b1c30]">Ticket Details</h1>
+                <p className="hidden text-xs muted-text sm:block">Operational context and ownership</p>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               {user?.role === 'admin' && (
@@ -128,7 +132,7 @@ const TicketDetails: React.FC = () => {
                   type="button"
                   onClick={handleDeleteTicket}
                   disabled={isDeleting}
-                  className="inline-flex items-center rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors duration-200"
+                  className="inline-flex items-center rounded-lg border border-red-200 bg-white/70 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
                 >
                   {isDeleting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -148,12 +152,15 @@ const TicketDetails: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="card space-y-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900">{ticket.title}</h2>
-              <p className="mt-2 text-gray-600 whitespace-pre-wrap">{ticket.description}</p>
+              <p className="mb-3 inline-flex rounded-full border border-[#00D1FF]/30 bg-[#00D1FF]/10 px-3 py-1 text-xs font-semibold uppercase text-[#004666]">
+                AI-classified ticket
+              </p>
+              <h2 className="text-2xl font-semibold text-[#0b1c30]">{ticket.title}</h2>
+              <p className="mt-2 whitespace-pre-wrap muted-text">{ticket.description}</p>
             </div>
             <div className="flex gap-2">
               <span className={`badge ${getStatusBadgeClass(ticket.status)}`}>
@@ -165,39 +172,39 @@ const TicketDetails: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center text-sm font-medium text-gray-500 mb-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-[#c7c4d8] bg-[#f8f9ff] p-4">
+              <div className="mb-2 flex items-center text-sm font-semibold text-[#464555]">
                 <Tag className="h-4 w-4 mr-2" />
                 Category
               </div>
-              <p className="text-gray-900 capitalize">{ticket.category.replace('-', ' ')}</p>
+              <p className="text-[#0b1c30] capitalize">{ticket.category.replace('-', ' ')}</p>
             </div>
 
-            <div className="rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center text-sm font-medium text-gray-500 mb-2">
+            <div className="rounded-2xl border border-[#c7c4d8] bg-[#f8f9ff] p-4">
+              <div className="mb-2 flex items-center text-sm font-semibold text-[#464555]">
                 <Calendar className="h-4 w-4 mr-2" />
                 Created
               </div>
-              <p className="text-gray-900">{formatDate(ticket.createdAt)}</p>
+              <p className="text-[#0b1c30]">{formatDate(ticket.createdAt)}</p>
             </div>
 
-            <div className="rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center text-sm font-medium text-gray-500 mb-2">
+            <div className="rounded-2xl border border-[#c7c4d8] bg-[#f8f9ff] p-4">
+              <div className="mb-2 flex items-center text-sm font-semibold text-[#464555]">
                 <User className="h-4 w-4 mr-2" />
                 Created By
               </div>
-              <p className="text-gray-900">{ticket.createdBy?.name || 'Unknown'}</p>
-              <p className="text-sm text-gray-500">{ticket.createdBy?.email || ''}</p>
+              <p className="text-[#0b1c30]">{ticket.createdBy?.name || 'Unknown'}</p>
+              <p className="text-sm muted-text">{ticket.createdBy?.email || ''}</p>
             </div>
 
-            <div className="rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center text-sm font-medium text-gray-500 mb-2">
+            <div className="rounded-2xl border border-[#00D1FF]/45 bg-[#00D1FF]/10 p-4 shadow-[0_0_40px_rgba(0,209,255,0.15)]">
+              <div className="mb-2 flex items-center text-sm font-semibold text-[#004666]">
                 <User className="h-4 w-4 mr-2" />
                 Assigned To
               </div>
-              <p className="text-gray-900">{ticket.assignedTo?.name || 'Unassigned'}</p>
-              <p className="text-sm text-gray-500">{ticket.assignedTo?.email || ''}</p>
+              <p className="text-[#0b1c30]">{ticket.assignedTo?.name || 'Unassigned'}</p>
+              <p className="text-sm text-[#004666]">{ticket.assignedTo?.email || ''}</p>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { ticketsAPI } from '@/services/api';
 import { 
+  Activity,
   Plus, 
   RefreshCw, 
   LogOut,
@@ -136,42 +137,50 @@ const Dashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="app-shell flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <Loader2 className="animate-spin h-8 w-8 text-primary-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading dashboard...</p>
+          <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-[#3525cd]" />
+          <p className="muted-text">Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="app-shell">
       {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="app-header sticky top-0 z-20">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">SuperOps Dashboard</h1>
+            <div className="flex items-center gap-3">
+              <div className="grid h-9 w-9 place-items-center rounded-lg bg-[#3525cd] text-white">
+                <Activity className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-[#0b1c30]">SuperOps Dashboard</h1>
+                <p className="hidden text-xs muted-text sm:block">Cognitive operations workspace</p>
+              </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => loadData(true)}
                 disabled={isRefreshing}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors duration-200"
+                className="rounded-lg border border-[#c7c4d8] bg-white/70 p-2 text-[#464555] transition hover:border-[#3525cd] hover:text-[#3525cd] disabled:opacity-50"
+                aria-label="Refresh dashboard"
               >
                 <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
               </button>
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <div className="hidden items-center gap-2 rounded-lg border border-[#c7c4d8] bg-white/70 px-3 py-2 text-sm text-[#464555] sm:flex">
                 <User className="h-4 w-4" />
                 <span>{user?.name}</span>
-                <span className={`badge ${user?.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                <span className={`badge ${user?.role === 'admin' ? 'bg-[#e9ddff] text-[#5516be]' : 'bg-[#c9e6ff] text-[#004c6e]'}`}>
                   {user?.role}
                 </span>
               </div>
               <button
                 onClick={logout}
-                className="p-2 text-gray-400 hover:text-red-600 rounded-md hover:bg-gray-100 transition-colors duration-200"
+                className="rounded-lg border border-[#c7c4d8] bg-white/70 p-2 text-[#464555] transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                aria-label="Log out"
               >
                 <LogOut className="h-5 w-5" />
               </button>
@@ -180,68 +189,75 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-8 flex flex-col justify-between gap-4 rounded-2xl border border-[#c7c4d8] bg-white/70 p-6 shadow-[0_4px_20px_rgba(15,23,42,0.05)] backdrop-blur-xl md:flex-row md:items-end">
+          <div>
+            <p className="mb-2 inline-flex rounded-full border border-[#00D1FF]/30 bg-[#00D1FF]/10 px-3 py-1 text-xs font-semibold uppercase text-[#004666]">
+              AI-assisted ticket operations
+            </p>
+            <h2 className="section-title">Support queue control center</h2>
+            <p className="mt-2 max-w-2xl muted-text">Scan volume, filter active work, and route issues from a single high-density workspace.</p>
+          </div>
+          <Link to="/create-ticket" className="btn-primary">
+            <Plus className="mr-2 h-5 w-5" />
+            Create Ticket
+          </Link>
+        </div>
+
         {/* Stats Overview */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
             <div className="card flex items-center">
-              <div className="p-3 bg-blue-100 rounded-lg mr-4">
-                <Clock className="h-6 w-6 text-blue-600" />
+              <div className="mr-4 rounded-lg bg-[#c9e6ff] p-3">
+                <Clock className="h-6 w-6 text-[#006591]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{stats.overview.total}</p>
-                <p className="text-sm text-gray-600">Total Tickets</p>
+                <p className="text-2xl font-bold text-[#0b1c30]">{stats.overview.total}</p>
+                <p className="text-sm muted-text">Total Tickets</p>
               </div>
             </div>
             
             <div className="card flex items-center">
-              <div className="p-3 bg-yellow-100 rounded-lg mr-4">
-                <AlertCircle className="h-6 w-6 text-yellow-600" />
+              <div className="mr-4 rounded-lg bg-amber-100 p-3">
+                <AlertCircle className="h-6 w-6 text-amber-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{stats.overview.open}</p>
-                <p className="text-sm text-gray-600">Open</p>
+                <p className="text-2xl font-bold text-[#0b1c30]">{stats.overview.open}</p>
+                <p className="text-sm muted-text">Open</p>
               </div>
             </div>
 
             <div className="card flex items-center">
-              <div className="p-3 bg-blue-100 rounded-lg mr-4">
-                <RefreshCw className="h-6 w-6 text-blue-600" />
+              <div className="mr-4 rounded-lg bg-[#e2dfff] p-3">
+                <RefreshCw className="h-6 w-6 text-[#3525cd]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{stats.overview.inProgress}</p>
-                <p className="text-sm text-gray-600">In Progress</p>
+                <p className="text-2xl font-bold text-[#0b1c30]">{stats.overview.inProgress}</p>
+                <p className="text-sm muted-text">In Progress</p>
               </div>
             </div>
 
             <div className="card flex items-center">
-              <div className="p-3 bg-green-100 rounded-lg mr-4">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+              <div className="mr-4 rounded-lg bg-emerald-100 p-3">
+                <CheckCircle className="h-6 w-6 text-emerald-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{stats.overview.resolved}</p>
-                <p className="text-sm text-gray-600">Resolved</p>
+                <p className="text-2xl font-bold text-[#0b1c30]">{stats.overview.resolved}</p>
+                <p className="text-sm muted-text">Resolved</p>
               </div>
             </div>
           </div>
         )}
 
         {/* Actions & Filters */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
-          <Link
-            to="/create-ticket"
-            className="btn-primary flex items-center"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            Create Ticket
-          </Link>
-
-          <div className="flex items-center space-x-4">
+        <div className="mb-6 flex flex-col justify-between gap-4 rounded-2xl border border-[#c7c4d8] bg-white/70 p-4 backdrop-blur md:flex-row md:items-center">
+          <p className="text-sm font-semibold text-[#0b1c30]">Queue filters</p>
+          <div className="grid gap-3 sm:grid-cols-3">
             {/* Status Filter */}
             <select
               value={filters.status || ''}
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value || undefined, page: 1 }))}
-              className="input-field w-auto"
+              className="input-field"
             >
               <option value="">All Status</option>
               <option value="open">Open</option>
@@ -254,7 +270,7 @@ const Dashboard: React.FC = () => {
             <select
               value={filters.priority || ''}
               onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value || undefined, page: 1 }))}
-              className="input-field w-auto"
+              className="input-field"
             >
               <option value="">All Priority</option>
               <option value="low">Low</option>
@@ -267,7 +283,7 @@ const Dashboard: React.FC = () => {
             <select
               value={filters.category || ''}
               onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value || undefined, page: 1 }))}
-              className="input-field w-auto"
+              className="input-field"
             >
               <option value="">All Categories</option>
               <option value="technical">Technical</option>
@@ -281,16 +297,16 @@ const Dashboard: React.FC = () => {
 
         {/* Tickets List */}
         <div className="card">
-          <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+          <div>
+            <h3 className="mb-4 text-lg font-semibold leading-6 text-[#0b1c30]">
               Your Tickets {user?.role === 'admin' && '(All)'}
             </h3>
 
             {tickets.length === 0 ? (
               <div className="text-center py-12">
-                <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No tickets found</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <AlertCircle className="mx-auto h-12 w-12 text-[#777587]" />
+                <h3 className="mt-2 text-sm font-semibold text-[#0b1c30]">No tickets found</h3>
+                <p className="mt-1 text-sm muted-text">
                   {Object.keys(filters).some(key => filters[key as keyof TicketFilters] && key !== 'page' && key !== 'limit' && key !== 'sortBy' && key !== 'sortOrder')
                     ? 'Try adjusting your filters'
                     : 'Get started by creating a new ticket'
@@ -299,46 +315,46 @@ const Dashboard: React.FC = () => {
                 {!Object.keys(filters).some(key => filters[key as keyof TicketFilters] && key !== 'page' && key !== 'limit' && key !== 'sortBy' && key !== 'sortOrder') && (
                   <div className="mt-6">
                     <Link to="/create-ticket" className="btn-primary">
-                      <Plus className="h-2 w-10 mr-2" />
+                      <Plus className="mr-2 h-4 w-4" />
                       Create your first ticket
                     </Link>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-300">
-                  <thead className="bg-gray-50">
+              <div className="overflow-hidden rounded-2xl border border-[#c7c4d8]">
+                <table className="min-w-full divide-y divide-[#c7c4d8]">
+                  <thead className="bg-[#eff4ff]">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-[#464555]">
                         Title
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-[#464555]">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-[#464555]">
                         Priority
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-[#464555]">
                         Category
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-[#464555]">
                         Created
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-[#464555]">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="divide-y divide-[#e5eeff] bg-white">
                     {tickets.map((ticket) => (
-                      <tr key={ticket._id} className="hover:bg-gray-50">
+                      <tr key={ticket._id} className="transition hover:bg-[#f8f9ff]">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
-                            <div className="text-sm font-medium text-gray-900 truncate max-w-xs">
+                            <div className="max-w-xs truncate text-sm font-semibold text-[#0b1c30]">
                               {ticket.title}
                             </div>
-                            <div className="text-sm text-gray-500 truncate max-w-xs">
+                            <div className="max-w-xs truncate text-sm muted-text">
                               {ticket.description}
                             </div>
                           </div>
@@ -348,7 +364,7 @@ const Dashboard: React.FC = () => {
                             value={ticket.status}
                             onChange={(e) => handleStatusUpdate(ticket._id, e.target.value)}
                             aria-label={`Change status for ticket ${ticket.title}`}
-                            className={`badge ${getStatusBadgeClass(ticket.status)} border-0 bg-transparent text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity`}
+                            className={`badge ${getStatusBadgeClass(ticket.status)} cursor-pointer border-0 text-xs font-semibold transition-opacity hover:opacity-80`}
                           >
                             <option value="open">Open</option>
                             <option value="in-progress">In Progress</option>
@@ -361,17 +377,17 @@ const Dashboard: React.FC = () => {
                             {ticket.priority}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-[#0b1c30] capitalize">
                           {ticket.category.replace('-', ' ')}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm muted-text">
                           {formatDate(ticket.createdAt)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-4">
                             <Link
                               to={`/tickets/${ticket._id}`}
-                              className="text-primary-600 hover:text-primary-900 transition-colors duration-200"
+                              className="font-semibold text-[#3525cd] transition hover:text-[#170426]"
                             >
                               View
                             </Link>
@@ -380,7 +396,7 @@ const Dashboard: React.FC = () => {
                                 type="button"
                                 onClick={() => handleDeleteTicket(ticket._id, ticket.title)}
                                 disabled={deletingTicketId === ticket._id}
-                                className="inline-flex items-center text-red-600 hover:text-red-800 disabled:opacity-50 transition-colors duration-200"
+                                className="inline-flex items-center font-semibold text-red-600 transition hover:text-red-800 disabled:opacity-50"
                               >
                                 {deletingTicketId === ticket._id ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />

@@ -18,10 +18,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Show loading spinner while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="app-shell flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <Loader2 className="animate-spin h-8 w-8 text-primary-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+          <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-[#3525cd]" />
+          <p className="muted-text">Loading...</p>
         </div>
       </div>
     );
@@ -35,13 +35,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Check role-based access
   if (requiredRole && user?.role !== requiredRole) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-4">
+      <div className="app-shell flex min-h-screen items-center justify-center px-4">
+        <div className="card max-w-md text-center">
+          <h1 className="mb-4 text-2xl font-bold text-red-600">Access Denied</h1>
+          <p className="mb-4 muted-text">
             You don't have permission to access this page.
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm muted-text">
             Required role: {requiredRole} | Your role: {user?.role}
           </p>
         </div>
